@@ -3,7 +3,7 @@ var expressWs = require('express-ws');
 var os = require('os');
 var pty = require('node-pty');
 
-// Whether to use binary transport.
+// 是否使用 binary 传送.
 const USE_BINARY = os.platform() !== "win32";
 
 function startServer() {
@@ -21,9 +21,10 @@ function startServer() {
 
   app.post('/terminals', (req, res) => {
     const env = Object.assign({}, process.env);
-    env['COLORTERM'] = 'truecolor';
+    env['COLORTERM'] = 'truecolor';  // linuix 环境变量的 颜色之，默认的 就是 truecolor
     var cols = parseInt(req.query.cols),
         rows = parseInt(req.query.rows),
+        // 查看 node-pty 官方文档
         term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
           name: 'xterm-256color',
           cols: cols || 80,
@@ -36,6 +37,7 @@ function startServer() {
     console.log('Created terminal with PID: ' + term.pid);
     terminals[term.pid] = term;
     logs[term.pid] = '';
+    //  xterm 的 onData 方法
     term.on('data', function(data) {
       logs[term.pid] += data;
     });
@@ -43,6 +45,7 @@ function startServer() {
     res.end();
   });
 
+  // 这是为了可以设置终端尺寸准备的，暂时忽略
   app.post('/terminals/:pid/size', (req, res) => {
     var pid = parseInt(req.params.pid),
         cols = parseInt(req.query.cols),
@@ -54,6 +57,7 @@ function startServer() {
     res.end();
   });
 
+  // websocket
   app.ws('/terminals/:pid', function (ws, req) {
     var term = terminals[parseInt(req.params.pid)];
     console.log('Connected to terminal ' + term.pid);
@@ -97,8 +101,7 @@ function startServer() {
     term.on('data', function(data) {
       try {
         send(data);
-      } catch (ex) {
-      }
+      } catch (ex) { }
     });
     ws.on('message', function(msg) {
       term.write(msg);

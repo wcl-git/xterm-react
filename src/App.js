@@ -62,7 +62,7 @@ export default class App extends React.Component {
     const webLinksAddon = new WebLinksAddon();
     term.loadAddon(webLinksAddon);
 
-    // 这里为窗口改变用的，可以不用
+    // 这里为窗口改变用的，可以不用，进一步开发会用到
     term.onResize((size) => {
       if (!pid) {
         return;
@@ -91,6 +91,7 @@ export default class App extends React.Component {
     // 调用 websoket
     this.timer = setTimeout(() => {
       fetch('http://localhost:3005/terminals?cols=' + term.cols + '&rows=' + term.rows, {method: 'POST'}).then((res) => {
+        // text 是 fetch 的一个 response 方法
         res.text().then((processId) => {
           pid = processId;
           socketURL += processId;
